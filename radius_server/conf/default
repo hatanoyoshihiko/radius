@@ -1,0 +1,71 @@
+server default {
+listen {
+        type = auth
+        ipaddr = *
+        port = 0
+        limit {
+              max_connections = 0
+              lifetime = 0
+              idle_timeout = 5
+        }
+}
+listen {
+        ipaddr = *
+        port = 0
+        type = acct
+        limit {
+        }
+}
+authorize {
+        filter_username
+        preprocess
+        chap
+        suffix
+        eap {
+                ok = return
+        }
+        files
+        -ldap
+        expiration
+        logintime
+}
+authenticate {
+        Auth-Type CHAP {
+                chap
+        }
+        eap
+}
+preacct {
+        preprocess
+        acct_unique
+        suffix
+        files
+}
+accounting {
+        detail
+        unix
+        exec
+        attr_filter.accounting_response
+}
+session {
+}
+post-auth {
+        update {
+                &reply: += &session-state:
+        }
+        exec
+        remove_reply_message_if_eap
+        Post-Auth-Type REJECT {
+                attr_filter.access_reject
+                eap
+                remove_reply_message_if_eap
+        }
+        Post-Auth-Type Challenge {
+        }
+}
+pre-proxy {
+}
+post-proxy {
+        eap
+}
+}
