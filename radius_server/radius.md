@@ -36,7 +36,7 @@ Instead of files you can also refer other server like a LDAP to require authenti
 
 ## Radius server settings
 
-### Enable modules to connect ldap
+- Enable modules to connect ldap
 
 ```
 # cd /etc/raddb/mods-enabled
@@ -45,7 +45,7 @@ Instead of files you can also refer other server like a LDAP to require authenti
 # ln -n ../sites-available/control-socket
 ```
 
-### /etc/raddb/radiusd.conf
+- /etc/raddb/radiusd.conf
 
 ```
 auth = yes #log output for authentication
@@ -53,7 +53,7 @@ auth_badpass = yes #log output for failed authentication
 auth_goodpass = yes #log output for succeed authentication
 ```
 
-### /etc/raddb/mods-available/ldap
+- /etc/raddb/mods-available/ldap
 
 ```
 ldap {
@@ -77,7 +77,7 @@ ldap {
 }
 ```
 
-### /etc/raddb/sites-available/default
+- /etc/raddb/sites-available/default
 
 ```
 authorize {
@@ -109,11 +109,11 @@ accounting {
 }
 ```
 
-### /etc/raddb/dictionary
+- /etc/raddb/dictionary
 
 If you need to write file below.
 
-### /etc/raddb/clients.conf
+- /etc/raddb/clients.conf
 
 This file is used in client authentication.
 Here in client is like a L2SW.
@@ -134,7 +134,7 @@ shotname = 2F floor switch.
 }
 ```
 
-### /etc/raddb/users
+- /etc/raddb/users
 
 This file is used by mac address authentication.
 
