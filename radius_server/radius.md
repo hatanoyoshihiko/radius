@@ -102,10 +102,10 @@ authenticate {
 }
 
 accounting {
-	detail
-	unix
-	exec
-	attr_filter.accounting_response
+        detail
+        unix
+        exec
+        attr_filter.accounting_response
 }
 ```
 
