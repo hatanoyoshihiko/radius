@@ -1,16 +1,12 @@
 # How to install and setting ldap server
 
-LDAP server is 
-
-**caution**
-
 ## Environment
 
 - OS: CentOS 7.8.2003
 - Required packages:
-
-
-
+  - openldap-servers-2.4.44-21.el7_6.x86_64
+  - openldap-2.4.44-21.el7_6.x86_64
+  - openldap-clients-2.4.44-21.el7_6.x86_64
 
 ## Install ldap server
 
@@ -72,7 +68,7 @@ olcAccess: {0}to attrs=entry by self write by dn="cn=Admin,dc=alessiareya,dc=com
            by * read
 olcAccess: {1}to attrs=userPassword,sambaLMPassword,sambaNTPassword by self write
            by dn="cn=Admin,dc=alessiareya,dc=com" write 
-					 by annonymous auth
+           by annonymous auth
 					 by * none
 olcAccess: {2}to * by self write
            by dn="cn=Admin,dc=alessiareya,dc=com" write
@@ -108,6 +104,8 @@ ldap-backup.sh
 #/bin/bash
 ldapsearch -x -LLL -H ldap://localhost/ -b "dc=alessiareya,dc=com" -D "cn=Manager,dc=alessiareya,dc=com" -w password > BACKUP_FILE.ldif
 ```
+
+### Configure service unit file
 
 If you use the ldap server in this server you have to run slapd.service after slapd.service.
 Add setting below.
@@ -220,3 +218,6 @@ olcAccess: {2}to by dn.sub="ou=user,dc=test,dc=org" write by read
 As result available schema is loaded "/etc/openldap/slapd.d/cn=config/cn=schema"
 
 ## Debug
+
+## Techical terms
+- OLC -Online Configuration
