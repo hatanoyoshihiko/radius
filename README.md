@@ -11,7 +11,7 @@
 
 Here in document explain mac address authentication and local client authentication.
 
-**caution**  
+**caution**
 'Local user' is not os users. Radius server has it in their files.
 Instead of files you can also refer other server like a LDAP to require authentication information.
 
@@ -43,6 +43,8 @@ Instead of files you can also refer other server like a LDAP to require authenti
 # ln -s ../mods-available/ldap
 # cd /etc/raddb/sites-enabled
 # ln -n ../sites-available/control-socket
+# cd /etc/raddb/
+# ln -s mods-config/files/authorize users # it may be unnecessary.
 ```
 
 - /etc/raddb/radiusd.conf
@@ -124,13 +126,13 @@ Clients connect using a specified password, authorized clients can connect.
 client SW01 {
 ipv4addr = 192.168.1.1
 secret = password
-shotname = 1F floor switch.
+shortname = 1F floor switch.
 }
 
 client SW02 {
 ipv4addr = 192.168.1.2
 secret = password
-shotname = 2F floor switch.
+shortname = 2F floor switch.
 }
 ```
 
