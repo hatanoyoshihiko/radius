@@ -38,7 +38,7 @@ Instead of files you can also refer other server like a LDAP to require authenti
 
 - Enable modules to connect ldap
 
-```
+```bash
 # cd /etc/raddb/mods-enabled
 # ln -s ../mods-available/ldap
 # cd /etc/raddb/sites-enabled
@@ -49,7 +49,7 @@ Instead of files you can also refer other server like a LDAP to require authenti
 
 - /etc/raddb/radiusd.conf
 
-```
+```bash
 auth = yes #log output for authentication
 auth_badpass = yes #log output for failed authentication
 auth_goodpass = yes #log output for succeed authentication
@@ -57,7 +57,7 @@ auth_goodpass = yes #log output for succeed authentication
 
 - /etc/raddb/mods-available/ldap
 
-```
+```bash
 ldap {
         server = 'localhost'
         identity = 'cn=Manager,dc=alessiareya,dc=com'
@@ -81,7 +81,7 @@ ldap {
 
 - /etc/raddb/sites-available/default
 
-```
+```bash
 authorize {
         filter_username
         preprocess
@@ -122,7 +122,7 @@ Here in client is like a L2SW.
 Radius server can specify ip address and password to connection source.
 Clients connect using a specified password, authorized clients can connect.
 
-```
+```bash
 client SW01 {
 ipv4addr = 192.168.1.1
 secret = password
@@ -140,7 +140,7 @@ shortname = 2F floor switch.
 
 This file is used by mac address authentication.
 
-```
+```bash
 MAC_ADDRESS Cleartext-Password := "MAC_ADDRESS"
 10ddb1a630bf Cleartext-Password := "10ddb1a630bf"
 ```
@@ -153,7 +153,7 @@ MAC_ADDRESS Cleartext-Password := "MAC_ADDRESS"
 
 **radius-server** is not clients ip address.
 
-```
+```bash
 # radtest --help
 radtest [OPTIONS] user passwd radius-server[:port] nas-port-number secret [ppphint][nasname]
 
@@ -173,7 +173,7 @@ Received Access-Accept Id 209 from 192.168.11.253:1812 to 192.168.11.253:51772 l
 If you use the ldap server with radius server at same server you have to run radius.service after slapd.service.
 Add setting below.
 
-```
+```bash
 # cp -p /usr/lib/systemd/system/radiusd.service /etc/systemd/system
 # vi /etc/systemd/system/radiusd.service
 [Unit]
@@ -197,15 +197,160 @@ After=slapd.service
 
 ### Service start
 
-```
+```bash
 # systemctl start radiusd.service
 # systemctl status radiusd.service
 ```
+## EAP-TLS Authentiation
+
+### Certificate settings
+
+- ca.cnf
+
+```bash
+# cd /etc/raddb/certs
+# vi ca.cnf
+[CA_default]
+default_days = 365
+
+[certificate_authority]
+commonName = "radius"
+```
+
+- server.cnf
+
+```bash
+# cd /etc/raddb/certs
+# vi server.cnf
+[ CA_default ]
+default_days = 3650
+
+[server]
+commonName = "alessiareya.local"
+```
+
+- client
+
+```bash
+[CA_default]
+default_days = 365
+
+[client]
+emailAddress = alessi@alessiareya.local
+commonName = alessi
+```
+
+### Create Certificate
+
+```bash
+# cd /etc/raddb/certs
+# make ca.pem
+# make server.pem
+# make client.pem
+# openssl pkcs12 -export -in ca.pem -out ca.p12
+```
+
+- memo
+
+```bash
+【ルート証明書関係】
+ca.pem: ルート証明書
+ca.key: ルート証明書の秘密鍵
+ca.crl: CRL(Certificate Revocation List、後述します)
+ca.p12: ルート証明書(PKCS#12フォーマット)
+
+【サーバー証明書関係】
+server.pem: サーバー証明書とサーバー証明書の秘密鍵を一体化したもの
+server.crt: サーバー証明書
+server.key: サーバー証明書の秘密鍵
+server.p12: サーバー証明書とサーバー証明書の秘密鍵を一体化したもの(PKCS#12フォーマット)
+
+【クライアント証明書関係】
+client.pem: クライアント証明書とクライアント証明書の秘密鍵を一体化したもの
+client.crt: クライアント証明書
+client.key: クライアント証明書の秘密鍵
+client.p12: クライアント証明書とクライアント証明書の秘密鍵を一体化したもの(PKCS#12フォーマット）
+
+
+```
+
+### EAP-TLS Authentication settings
+
+- eap
+
+```bash
+# vi /etc/raddb/mods-enabled/eap
+tls-config tls-common {
+private_key_password = whatever #specify server certificate password. server.cnf, input_password/output_password(with same password)
+private_key_file = /usr/local/etc/raddb/certs/server.key #specify server certificate key file
+certificate_file = /usr/local/etc/raddb/certs/server.pem #specify server certificate file
+ca_file = /usr/local/etc/raddb/certs/ca.pem #specify root certificate file
+check_crl = no #omit Certificate Revocation List check, but recommend 'yes'
+allow_expired_crl = yes #make expired CRL available, but recommend 'no'
+}
+```
+
+- tls
+
+```bash
+# vi /etc/raddb/sites-available/tls
+private_key_password = whatever #specify server certificate passwod. server.cnf, input_password/output_password(with same password)
+private_key_file = /usr/local/etc/raddb/certs/server.key #specify server certificate key file
+certificate_file = /usr/local/etc/raddb/certs/server.pem #specify server certificate file
+ca_file = /usr/local/etc/raddb/certs/ca.pem #specify root certificate file
+check_crl = no #omit Certificate Revocation List check, but recommend 'yes'
+allow_expired_crl = yes #make expired CRL available, but recommend 'no'
+```
+
+### EAP-TLS Authentication Test
+
+- install wpa_supplicant to client
+`# yum install wpa_supplicant`
+
+- copy certificate files to client
+
+```bash
+# cd /etc/raddb/certs
+# scp -p ca.pem client.crt client.key centos@192.168.11.253:
+
+# chmod 666 ca.pem client.crt client.key
+```
+
+- make config file
+
+```bash
+# vi test.conf
+network={
+key_mgmt=WPA-EAP
+eap=TLS
+anonymous_identity="anonymous"
+ca_cert="ca.pem"
+client_cert="client.crt"
+private_key="client.key"
+private_key_passwd="whatever"
+}
+```
+
+- Debug Radius server
+
+```bash
+# radiusd -X
+```
+
+- Run test command
+
+```bash
+# eapol_test -a 192.168.11.200 -c test.conf -s nki415
+SUCCESS
+```
+
+---
 
 ## Debug
 
 When you check syntax error use below to identify error.
 `# radiusd -C -lstdout -xxx`
+`# raddiusd -X`
 
 ## How to configure the catalyst to connect radius server
 
