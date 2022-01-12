@@ -346,7 +346,7 @@ SUCCESS
 
 ---
 
-## Debug
+## Debugging
 
 When you check syntax error use below to identify error.
 `# radiusd -C -lstdout -xxx`
@@ -358,7 +358,8 @@ When you check syntax error use below to identify error.
 
 ## Technical terms
 
-- NAS Network access server.
+- NAS
+Network access server.
 
 ## See also
 [Free RADIUS](https://freeradius.org/) - officail page
