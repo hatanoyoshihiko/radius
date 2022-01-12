@@ -2,7 +2,7 @@ ldap {
         server = 'localhost'
         port = 389
         identity = 'cn=Manager,dc=alessiareya,dc=com'
-        password = password
+        password = your_password
         base_dn = 'dc=alessiareya,dc=com'
         sasl {
         }
